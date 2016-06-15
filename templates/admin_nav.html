@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load staticfiles %}
+    <meta charset="UTF-8">
+    <title>Kino XYZ {% block title %} - strona główna{%  endblock %} </title>
+    <link rel="stylesheet" type="text/css" href=" {% static "nav_style.css" %} "/>
+    <link rel="stylesheet" type="text/css" href=" {% static "admin_style.css" %} "/>
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script src="{% static "ajax.js" %}"></script>
+    <script src="{% static "client.js" %}"></script>
+</head>
+<body>
+    <header>
+    </header>
+    <div id="top">
+    <div id="authentication">
+        <div id="text_auth">
+            {% if request.user.is_authenticated %}
+                <form method="POST" action="/logout/">
+                    {% csrf_token %}
+                    <p>Jesteś zalogowany jako {{ request.user.username }}</p>
+                    <input class="log_btn" id="loggout" type="submit" value="wyloguj">
+                </form>
+            {% else %}
+                <div id="accounts">
+                    <a href="/login_form/">Zaloguj się</a>
+                    <a href="/register_form/">Załóż konto</a>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+    <nav>
+        <ul id="nav">
+            <li>
+                <a href="/">Strona domowa</a>
+            </li>
+             <li>
+                <a href="/administration/">Administracja</a>
+            </li>
+            <li>
+                <a href="/films/">Filmy</a>
+            </li>
+            <li>
+                <a href="/program/">Repertuar</a>
+            </li>
+        </ul>
+    </nav>
+    </div>
+    <div id="token"> {% csrf_token %} </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div>
+                <ul id="add_film_modal" class="add_modal">
+                    <li>
+                            <p> Tytuł:</p>
+                            <input type="text" id="title" placeholder="tytuł" required>
+                    </li>
+                    <li>
+                            <p> Reżyser:</p>
+                            <input type="text" id="director" placeholder="reżyser">
+                    </li>
+                    <li>
+                        <div>
+                            <p> Rok powstania:</p>
+                            <input type="number" id="release_year" placeholder="rok powstania" required>
+
+                        </div>
+                    </li>
+                    <li>
+                            <p> Długość w minutach:</p>
+                            <input type="number" id="length" placeholder="długość" required>
+                    </li>
+                    <li>
+                        <p>Link do plakatu reklamującego film: </p>
+                        <input type="url" id="url" placeholder="link do plakatu">
+                    </li>
+                    <li class="add_film_modal_li">
+                        <p>Opis filmu: </p>
+                        <textarea id="description" cols="130" rows="5" placeholder="opis filmu"></textarea>
+                    </li>
+                </ul>
+                <button id="btn_add_film"> Dodaj film</button>
+            </div>
+          </div>
+    </div>
+
+    <div id="actions">
+        <a>  <button id="add_film" type="button">Dodaj film</button> </a>
+        <a>  <button id="add_auditorium" type="button">Dodaj salę</button> </a>
+        <a>  <button id="add_showtime" type="button">Dodaj seans</button> </a>
+    </div>
+
+    <div id="myModal1" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div>
+                <ul id="add_auditorium_modal" class="add_modal">
+                    <li>
+                            <p> Numer sali :</p>
+                            <input type="number" id="auditorium_number" placeholder="numer sali">
+                    </li>
+                    <li>
+                            <p> Liczba miejsc w rzędzie :</p>
+                            <input type="number" id="seat_number" placeholder="liczba miejsc">
+                    </li>
+                    <li>
+                            <p> Liczba rzędów :</p>
+                            <input type="number" id="row_number" placeholder="liczba rzędów">
+                    </li>
+                </ul>
+                <button id="btn_add_auditorium"> Dodaj salę</button>
+            </div>
+          </div>
+    </div>
+    <div id="myModal2" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div id="choices_showtime">
+                <ul id="add_showtime_modal" class="add_modal">
+                    <li>
+                            <p> Film :</p>
+                            <select id="drop_down_movie" name="movies">
+                            </select>
+                    </li>
+                    <li>
+                            <p> Sala :</p>
+                            <select id="drop_down_auditorium" name="auditorium">
+                            </select>
+                    </li>
+                    <li>
+                        <p> Dzień :</p>
+                        <select id="drop_down_day" name="auditorium">
+                            {% for day  in days %}
+                                <option id="opt" value="{{ day }}" selected="selected">
+                                    {{ day }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                    <li>
+                        <p> Miesiąc :</p>
+                        <select id="drop_down_month" name="auditorium">
+                            {% for month  in months %}
+                                <option id="opt" value="{{ month.0 }}" selected="selected">
+                                    {{ month.1 }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                <li>
+                        <p> Rok</p>
+                        <select id="drop_down_year" name="auditorium">
+                            {% for year  in years %}
+                                <option id="opt" value="{{ year }}" selected="selected">
+                                    {{ year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                 </ul>
+                    <button id="btn_show_time"> Pokaż dostępne godziny</button>
+            </div>
+          </div>
+    </div>
+    <div>
+        <h1>Seanse dzisiaj:</h1>
+        <ul id="shows_today">
+            {% if shows_today %}
+            {% else %}
+                <p> Brak seansów zaplanowanych na dzisiaj</p>
+            {% endif %}
+            {% for show in shows_today %}
+                <li>
+                    <p>
+                        {{ show }} <br><br />
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        <h1>Ostatnie powiadomienia od pracowników:</h1>
+        <ul id="notifications">
+            {% if notification %}
+            {% else %}
+                <p> Brak powiadomień </p>
+            {% endif %}
+            {% for notification in notifications %}
+                <li>
+                    notification
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% block content %}
+    {%  endblock %}
+</body>
+</html>
